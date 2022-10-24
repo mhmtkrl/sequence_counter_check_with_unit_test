@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
+
 #define testVectorLength    13
 
 uint8_t testVector[testVectorLength] = {3, 4, 4, 9, 5, 5, 7, 8, 9, 13, 14, 15, 0};
@@ -12,7 +13,7 @@ typedef struct {
 
 ERROR_COUNT_t globalEC = {0, 0};
 
-typedef ERROR_COUNT_t (*FsequenceCheckFunction)(uint8_t);
+typedef ERROR_COUNT_t (*FsequenceCheckFunction)(uint8_t vector[13]);
 
 typedef enum {
     REPETATION_OF_INFORMATION,
@@ -29,35 +30,42 @@ typedef struct {
 SEQUENCE_COUNTER_CHECK_t t_sequence_check;
 SEQUENCE_COUNTER_CHECK_t *sequence_check_struct = &t_sequence_check;
 
-ERROR_COUNT_t checkSequence(uint8_t testNumber) {
+ERROR_COUNT_t checkSequence(uint8_t vector[13]) {
     static ERROR_COUNT_t ec;
     static uint8_t prevNumber;
     static int8_t isFirstTime = 1;
     if(isFirstTime) {
-        prevNumber = testNumber-1;
+        prevNumber = vector[0]-1;
         isFirstTime = 0;
     }
-    uint8_t currentNumber = testNumber;
-    printf("current Number: %d\r\n", currentNumber);
-    printf("Previous Number: %d\r\n", prevNumber);
-    int8_t diff = currentNumber - prevNumber;
-    printf("diff: %d\r\n", diff);
+    uint8_t currentNumber;
+
+    for(int i = 0 ; i < testVectorLength ; i++) {
+        currentNumber = vector[i];
+        //printf("current Number: %d\r\n", currentNumber);
+       // printf("Previous Number: %d\r\n", prevNumber);
+        int8_t diff = currentNumber - prevNumber;
+        //printf("diff: %d\r\n", diff);
 
 
-    if(diff != 1 || diff != -15) {
-            if(currentNumber == prevNumber) {
-                sequence_check_struct->errorCount.repetation++;
-                sequence_check_struct->fault_type = REPETATION_OF_INFORMATION;
-            }else {
-                sequence_check_struct->errorCount.loss++;
-                sequence_check_struct->fault_type = LOSS_OF_INFORMATION;
-            }
-    }else {
-        sequence_check_struct->fault_type = NO_ERROR;
+        if(diff != 1 && diff != -15) {
+                if(currentNumber == prevNumber) {
+                    //    printf("!");
+                    sequence_check_struct->errorCount.repetation++;
+                    sequence_check_struct->fault_type = REPETATION_OF_INFORMATION;
+                }else {
+                   // printf("*");
+                    sequence_check_struct->errorCount.loss++;
+                    sequence_check_struct->fault_type = LOSS_OF_INFORMATION;
+                }
+        }else {
+           // printf("?");
+            sequence_check_struct->fault_type = NO_ERROR;
+        }
+
+        prevNumber = currentNumber;
+        //printf("---------------------------\r\n");
     }
-
-    prevNumber = currentNumber;
-    printf("---------------------------\r\n");
     ec.loss = sequence_check_struct->errorCount.loss;
     ec.repetation = sequence_check_struct->errorCount.repetation;
 
@@ -74,9 +82,12 @@ int main() {
     structInit();
 
 
-    for(int i = 0 ; i < testVectorLength ; i++) {
-        globalEC = sequence_check_struct->checkSequenceFunction(testVector[i]);
-    }
+
+    globalEC = sequence_check_struct->checkSequenceFunction(&testVector[0]);
+    printf("Loss: %d \r\nRepeat: %d\r\n", globalEC.loss, globalEC.repetation);
+    //Unit Test
+    assert(4 == globalEC.loss);
+    assert(2 == globalEC.repetation);
 
     printf("done!");
 }
