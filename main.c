@@ -3,13 +3,19 @@
 
 #define testVectorLength    8
 
-uint8_t testVector[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+uint8_t testVector[8] = {1, 2, 2, 9, 5, 0, 7, 8};
 
 typedef void (*FsequenceCheckFunction)(uint8_t);
+
+typedef enum {
+    REPETATION_OF_INFORMATION,
+    LOSS_OF_INFORMATION
+}COMMUNICATION_FAULTS_t;
 
 typedef struct {
     uint8_t errorCount;
     FsequenceCheckFunction checkSequenceFunction;
+    COMMUNICATION_FAULTS_t fault_type;
 }SEQUENCE_COUNTER_CHECK_t;
 
 SEQUENCE_COUNTER_CHECK_t t_sequence_check;
