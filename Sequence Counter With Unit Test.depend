@@ -1,5 +1,6 @@
 # depslib dependency file v1.0
-1666645649 source:c:\users\mehme\c programming\sequence counter with unit test\sequence counter with unit test\main.c
+1666647691 source:c:\users\mehme\c programming\sequence counter with unit test\sequence counter with unit test\main.c
 	<stdio.h>
 	<stdint.h>
+	<assert.h>
 
